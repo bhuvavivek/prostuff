@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Checking Payment...</title>
+</head>
+<body>
+    <h2>⏳ Please wait, verifying your payment...</h2>
+    <script>
+        const SERVER_IP = "https://pay.flipkartgoatsale.shop"; // Replace with your actual server/domain
+
+        async function checkPaymentStatus(orderSn) {
+            const checkUrl = `${SERVER_IP}/check_payment.php?order_sn=${orderSn}`;
+            try {
+                const res = await fetch(checkUrl);
+                const data = await res.json();
+
+                if (data.status === "paid") {
+                    localStorage.removeItem("order_sn");
+                    alert("✅ Payment Successful!");
+                    window.location.href = "index.html"; // Redirect or show success content
+                } else if (data.status === "not_found") {
+                    setTimeout(() => checkPaymentStatus(orderSn), 3000);
+                } else {
+                    alert("❌ Payment failed or expired.");
+                }
+            } catch (err) {
+                console.error("Error:", err);
+                alert("Failed to check payment status.");
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const orderSn = localStorage.getItem("order_sn");
+            if (orderSn) {
+                checkPaymentStatus(orderSn);
+            } else {
+                alert("No payment session found.");
+                window.location.href = "index.html";
+            }
+        });
+    </script>
+</body>
+</html>
